@@ -1,19 +1,16 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
-import requests
 import random
 import time
 import os
+import geckodriver_autoinstaller
 from faker import Faker
-fake = Faker()
-chromedriver_location = "./chromedriver"
 
 urls = ['https://jobs.kellogg.com/job/Lancaster-Permanent-Production-Associate-Lancaster-PA-17601/817684800/#',
         'https://jobs.kellogg.com/job/Omaha-Permanent-Production-Associate-Omaha-NE-68103/817685900/z',
         'https://jobs.kellogg.com/job/Battle-Creek-Permanent-Production-Associate-Battle-Creek-MI-49014/817685300/',
         'https://jobs.kellogg.com/job/Memphis-Permanent-Production-Associate-Memphis-TN-38114/817685700/'
         ]
-
 
 data2 = {
     'resume': '//*[@id="49:_file"]',
@@ -24,6 +21,7 @@ data2 = {
     'salary': '//*[@id="172:_txtFld"]',
     'country': '//*[@id="195:_select"]'
 }
+
 data = {
     'email': '//*[@id="fbclc_userName"]',
     'email-retype': '//*[@id="fbclc_emailConf"]',
@@ -32,47 +30,52 @@ data = {
     'first_name': '//*[@id="fbclc_fName"]',
     'last_name': '//*[@id="fbclc_lName"]',
     'pn': '//*[@id="fbclc_phoneNumber"]',
-
 }
 
-
-cities = {'Lancaster':	'Pennsylvania',
-          'Omaha':	'Nebraska',
-          'Battle Creek':	'Michigan',
-          'Memphis':	'Tennessee',
+cities = {'Lancaster': 'Pennsylvania',
+          'Omaha': 'Nebraska',
+          'Battle Creek': 'Michigan',
+          'Memphis': 'Tennessee',
           }
 
 zip_codes = {
-    'Lancaster':	['17573', '17601', '17602', '17605', '17606', '17699'],
-    'Omaha':	['68104', '68105', '68106', '68124', '68127', '68134'],
-    'Battle Creek':	['49014', '49015', '49016', '49017', '49018', '49037'],
-    'Memphis':	['38116', '38118', '38122', '38127', '38134', '38103'],
+    'Lancaster': ['17573', '17601', '17602', '17605', '17606', '17699'],
+    'Omaha': ['68104', '68105', '68106', '68124', '68127', '68134'],
+    'Battle Creek': ['49014', '49015', '49016', '49017', '49018', '49037'],
+    'Memphis': ['38116', '38118', '38122', '38127', '38134', '38103'],
 }
 
 
+def click_link(xpath: str):
+    done = False
+    while not done:
+        try:
+            driver.find_element_by_xpath(xpath).click()
+            done = True
+        except Exception as e:
+            time.sleep(2)
+
+
+fake = Faker()
+driver = webdriver.Firefox()
 i = 1
-
-
-
-while(i < 10000):
-    
+while i < 10000:
     j = random.randint(0, 4)
     try:
-        driver = webdriver.Chrome(chromedriver_location)
+        # Check if the current version of geckodriver exists
+        # and if it doesn't exist, download it automatically,
+        # then add geckodriver to path
+        geckodriver_autoinstaller.install()
+
         driver.get(urls[j])
-        # driver.manage().timeouts().pageLoadTimeout(5, SECONDS)
-        # time.sleep(10)
-        driver.implicitly_wait(10)
-        time.sleep(2)
-        driver.find_element_by_xpath(
-            '//*[@id="content"]/div/div[2]/div/div[1]/div[1]/div/div/button').click()
-        driver.find_element_by_xpath(
-            '//*[@id="applyOption-top-manual"]').click()
-        driver.find_element_by_xpath(
-            '//*[@id="page_content"]/div[2]/div/div/div[2]/div/div/div[2]/a').click()
+        driver.implicitly_wait(20)
+        click_link('//*[@id="content"]/div/div[2]/div/div[1]/div[1]/div/div/button')
+        click_link('//*[@id="applyOption-top-manual"]')
+        click_link('//*[@id="page_content"]/div[2]/div/div/div[2]/div/div/div[2]/a')
     except Exception as e:
         print("failed 1: " + str(e))
         pass
+
     time.sleep(2)
     # print(random.choice(list(cities.items()))[0])
     email = fake.email()
@@ -96,9 +99,8 @@ while(i < 10000):
 
         try:
             driver.find_element_by_xpath(data.get(key)).send_keys(info)
-        except:
-            print("failed 2")
-
+        except Exception as e:
+            print(f"failed 2 {e}")
 
         # '//*[@id="dataPrivacyId"]'
         # '//*[@id="dlgButton_20:"]'
@@ -111,9 +113,6 @@ while(i < 10000):
         select.select_by_value('US')
         select = Select(driver.find_element_by_id('fbclc_country'))
         select.select_by_value('US')
-
-
-
 
         driver.find_element_by_xpath('//*[@id="dataPrivacyId"]').click()
         time.sleep(1.5)
@@ -151,7 +150,7 @@ while(i < 10000):
             driver.find_element_by_xpath(
                 '//*[@id="48:_attach"]/div[6]').click()
 
-            info = os.getcwd()+"/src/resume.png"
+            info = os.getcwd() + "/src/resume.png"
         if key == 'addy':
             info = fake.street_address()
         if key == 'city':
