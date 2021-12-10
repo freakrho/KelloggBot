@@ -57,15 +57,15 @@ def click_link(xpath: str):
 
 
 fake = Faker()
-# Check if the current version of geckodriver exists
-# and if it doesn't exist, download it automatically,
-# then add geckodriver to path
-geckodriver_autoinstaller.install()
-driver = webdriver.Firefox()
 i = 1
 while i < 10000:
     j = random.randint(0, 4)
     try:
+        # Check if the current version of geckodriver exists
+        # and if it doesn't exist, download it automatically,
+        # then add geckodriver to path
+        geckodriver_autoinstaller.install()
+        driver = webdriver.Firefox()
         driver.get(urls[j])
         driver.implicitly_wait(20)
         click_link('//*[@id="content"]/div/div[2]/div/div[1]/div[1]/div/div/button')
